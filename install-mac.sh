@@ -23,7 +23,13 @@ if command -v zeltro >/dev/null 2>&1 || [ -x /usr/local/bin/zeltro ]; then
   say "✓ Zeltro CLI already installed"
 else
   say "Installing Zeltro CLI…"
-  curl -fsSL "$CLI/install-mac.sh" | bash
+  # Run from a file, not piped into bash: piped, bash reads the script from
+  # stdin, and any command in it that also reads stdin (brew does) swallows
+  # the rest of the script, which then ends early and "succeeds".
+  cli_installer="$(mktemp)"
+  curl -fsSL "$CLI/install-mac.sh" -o "$cli_installer"
+  bash "$cli_installer"
+  rm -f "$cli_installer"
 fi
 
 for b in /opt/homebrew/bin/brew /usr/local/bin/brew; do
