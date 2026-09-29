@@ -14,7 +14,7 @@ CASK="canebaycomputers/zeltro/zeltro"
 say() { printf '\033[1;36m%s\033[0m\n' "$*"; }
 die() { printf '\033[1;31m%s\033[0m\n' "$*" >&2; exit 1; }
 
-[ "$(uname -s)" = Darwin ] || die "This installer is for macOS. Linux: https://zeltro.build/download"
+[ "$(uname -s)" = Darwin ] || die "This installer is for macOS. Linux: https://zeltro.ai/download"
 [ "$(id -u)" -ne 0 ] || die "Run this as your normal user, not root."
 
 # The app is a front end for Zeltro CLI, so the CLI goes first. Its installer
@@ -48,4 +48,4 @@ fi
 say "✓ Zeltro installed. Open it from Applications."
 echo "  Updates: Updates, in the app's footer, or: brew upgrade --cask zeltro"
 echo "  If the CLI was installed just now, start Docker Desktop once before your first project."
-echo "  Free for personal use. Business use: https://zeltro.build/commercial"
+echo "  Free for personal use. Business use: https://zeltro.ai/commercial"

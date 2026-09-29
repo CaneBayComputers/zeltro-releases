@@ -19,7 +19,7 @@ say() { printf '\033[1;36m%s\033[0m\n' "$*"; }
 die() { printf '\033[1;31m%s\033[0m\n' "$*" >&2; exit 1; }
 
 [ "$(id -u)" -ne 0 ] || die "Run this as your normal user, not root. It uses sudo where it needs to."
-[ "$(uname -s)" = Linux ] || die "This installer is for Linux. Windows: https://zeltro.build/download/windows"
+[ "$(uname -s)" = Linux ] || die "This installer is for Linux. Windows: https://zeltro.ai/download/windows"
 [ "$(uname -m)" = x86_64 ] || die "Zeltro's Linux packages are x86_64 only for now."
 [ -r /etc/os-release ] || die "Can't tell which Linux this is (no /etc/os-release)."
 
@@ -122,4 +122,4 @@ esac
 say "✓ Zeltro installed. Open it from your applications menu."
 echo "  Updates arrive with your system's own (apt upgrade, dnf upgrade, pacman -Syu)."
 echo "  If the CLI was installed just now, log out and back in first so Docker works."
-echo "  Free for personal use. Business use: https://zeltro.build/commercial"
+echo "  Free for personal use. Business use: https://zeltro.ai/commercial"
