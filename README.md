@@ -20,7 +20,7 @@ Installed copies update themselves: **Updates**, in the app's footer.
 
 ## License
 
-Free for personal use. Commercial use needs a **Lifetime Commercial License: US$99.99 once, per business**, at [zeltro.build/commercial](https://zeltro.build/commercial).
+Free for personal use. Commercial use needs a **Lifetime Commercial License**, paid once, per business: see [zeltro.build/commercial](https://zeltro.build/commercial).
 
 Use is governed by the [End User License Agreement](https://zeltro.build/terms). The app sends anonymous usage counts and scrubbed error reports; see the [privacy policy](https://zeltro.build/privacy).
 
