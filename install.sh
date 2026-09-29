@@ -90,7 +90,7 @@ case "$kind" in
   rpm)
     sudo install -D -m 644 "$tmp/zeltro.asc" /etc/pki/rpm-gpg/RPM-GPG-KEY-zeltro
     printf '%s\n' '[zeltro]' 'name=Zeltro' "baseurl=$REPO/rpm" 'enabled=1' 'gpgcheck=1' \
-      'repo_gpgcheck=1' 'gpgkey=file:///etc/pki/rpm-gpg/RPM-GPG-KEY-zeltro' \
+      'repo_gpgcheck=1' 'metadata_expire=6h' 'gpgkey=file:///etc/pki/rpm-gpg/RPM-GPG-KEY-zeltro' \
       | sudo tee /etc/yum.repos.d/zeltro.repo >/dev/null
     say "Installing the Zeltro app…"
     sudo dnf install -y zeltro-gui ;;
