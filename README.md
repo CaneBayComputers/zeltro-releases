@@ -22,7 +22,13 @@ The repositories, if you'd rather set one up yourself (key fingerprint `1DEA 316
 | dnf | [`packages.zeltro.build/rpm/zeltro.repo`](https://packages.zeltro.build/rpm/zeltro.repo) into `/etc/yum.repos.d/` |
 | pacman | `[zeltro]` · `SigLevel = Required DatabaseRequired` · `Server = https://packages.zeltro.build/arch/$arch` |
 
-**macOS:** coming soon.
+**macOS** (Apple Silicon and Intel):
+
+```bash
+curl -fsSL https://raw.githubusercontent.com/CaneBayComputers/zeltro-releases/main/install-mac.sh | bash
+```
+
+This installs Zeltro CLI if it's missing (with Homebrew and Docker Desktop), then the app from the [Zeltro Homebrew tap](https://github.com/CaneBayComputers/homebrew-zeltro): `brew install --cask canebaycomputers/zeltro/zeltro`. Update with **Updates** in the app, or `brew upgrade --cask zeltro`.
 
 Installed copies can also update themselves: **Updates**, in the app's footer.
 
