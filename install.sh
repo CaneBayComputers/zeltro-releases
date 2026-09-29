@@ -1,6 +1,6 @@
 #!/usr/bin/env bash
 # Zeltro (desktop app) for Linux: installs Zeltro CLI if it isn't there yet,
-# adds the Zeltro package repository (packages.zeltro.build, signed), and
+# adds the Zeltro package repository (packages.zeltro.ai, signed), and
 # installs the app from it, so it updates with the system's own updates
 # (apt upgrade / dnf upgrade / pacman -Syu). Run as your normal user; it uses
 # sudo where it has to.
@@ -10,7 +10,7 @@
 # Ubuntu/Debian (.deb), Fedora/RHEL (.rpm) and Arch (pacman), x86_64.
 set -euo pipefail
 
-REPO="https://packages.zeltro.build"
+REPO="https://packages.zeltro.ai"
 # The Zeltro Packages signing key. The downloaded key must match it.
 FPR="1DEA3164BE9F0679D99133150970B41FFA5E9F7B"
 CLI="https://raw.githubusercontent.com/CaneBayComputers/zeltro-cli/master"

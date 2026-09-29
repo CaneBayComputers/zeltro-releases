@@ -14,13 +14,13 @@ curl -fsSL https://dist.canebaycomputers.com/zeltro/ubuntu | bash
 
 This installs [Zeltro CLI](https://github.com/CaneBayComputers/zeltro-cli) if it's missing, adds the signed Zeltro package repository, and installs the app from it, so it updates with the rest of your system (`apt upgrade`, `dnf upgrade`, `pacman -Syu`). The packages are also attached to each [release](https://github.com/CaneBayComputers/zeltro-releases/releases); a `.deb` or `.rpm` installed by hand adds the repository itself.
 
-The repositories, if you'd rather set one up yourself (key fingerprint `1DEA 3164 BE9F 0679 D991  3315 0970 B41F FA5E 9F7B`, at [packages.zeltro.build/zeltro.asc](https://packages.zeltro.build/zeltro.asc)):
+The repositories, if you'd rather set one up yourself (key fingerprint `1DEA 3164 BE9F 0679 D991  3315 0970 B41F FA5E 9F7B`, at [packages.zeltro.ai/zeltro.asc](https://packages.zeltro.ai/zeltro.asc)):
 
 | | |
 |---|---|
-| apt | `deb [arch=amd64 signed-by=/etc/apt/keyrings/zeltro.asc] https://packages.zeltro.build/apt stable main` |
-| dnf | [`packages.zeltro.build/rpm/zeltro.repo`](https://packages.zeltro.build/rpm/zeltro.repo) into `/etc/yum.repos.d/` |
-| pacman | `[zeltro]` · `SigLevel = Required DatabaseRequired` · `Server = https://packages.zeltro.build/arch/$arch` |
+| apt | `deb [arch=amd64 signed-by=/etc/apt/keyrings/zeltro.asc] https://packages.zeltro.ai/apt stable main` |
+| dnf | [`packages.zeltro.ai/rpm/zeltro.repo`](https://packages.zeltro.ai/rpm/zeltro.repo) into `/etc/yum.repos.d/` |
+| pacman | `[zeltro]` · `SigLevel = Required DatabaseRequired` · `Server = https://packages.zeltro.ai/arch/$arch` |
 
 **macOS** (Apple Silicon and Intel):
 
