@@ -1,6 +1,8 @@
 #!/usr/bin/env bash
 # Zeltro (desktop app) for Linux: installs Zeltro CLI if it isn't there yet,
-# then the newest app package for this distro. Run as your normal user; it uses
+# adds the Zeltro package repository (packages.zeltro.build, signed), and
+# installs the app from it, so it updates with the system's own updates
+# (apt upgrade / dnf upgrade / pacman -Syu). Run as your normal user; it uses
 # sudo where it has to.
 #
 #   curl -fsSL https://dist.canebaycomputers.com/zeltro/ubuntu | bash
@@ -8,7 +10,9 @@
 # Ubuntu/Debian (.deb), Fedora/RHEL (.rpm) and Arch (pacman), x86_64.
 set -euo pipefail
 
-BASE="https://github.com/CaneBayComputers/zeltro-releases/releases/latest/download"
+REPO="https://packages.zeltro.build"
+# The Zeltro Packages signing key. The downloaded key must match it.
+FPR="1DEA3164BE9F0679D99133150970B41FFA5E9F7B"
 CLI="https://raw.githubusercontent.com/CaneBayComputers/zeltro-cli/master"
 
 say() { printf '\033[1;36m%s\033[0m\n' "$*"; }
@@ -22,9 +26,9 @@ die() { printf '\033[1;31m%s\033[0m\n' "$*" >&2; exit 1; }
 . /etc/os-release
 ids=" ${ID:-} ${ID_LIKE:-} "
 case "$ids" in
-  *" ubuntu "*|*" debian "*)                      kind=deb;  cli=install-ubuntu.sh; pkg=zeltro-gui_amd64.deb ;;
-  *" fedora "*|*" rhel "*|*" centos "*)          kind=rpm;  cli=install-fedora.sh; pkg=zeltro-gui.x86_64.rpm ;;
-  *" arch "*)                                     kind=arch; cli=install-arch.sh;   pkg=zeltro-gui-x86_64.pkg.tar.zst ;;
+  *" ubuntu "*|*" debian "*)                      kind=deb;  cli=install-ubuntu.sh ;;
+  *" fedora "*|*" rhel "*|*" centos "*)          kind=rpm;  cli=install-fedora.sh ;;
+  *" arch "*)                                     kind=arch; cli=install-arch.sh ;;
   *) die "Unsupported Linux (${ID:-unknown}). Zeltro supports Ubuntu/Debian, Fedora/RHEL and Arch." ;;
 esac
 
@@ -37,23 +41,44 @@ else
 fi
 
 tmp="$(mktemp -d)"
-chmod 755 "$tmp"   # apt reads the file as its own user
 trap 'rm -rf "$tmp"' EXIT
 
-say "Downloading the Zeltro app…"
-curl -fL --progress-bar -o "$tmp/$pkg" "$BASE/$pkg"
-curl -fsSL -o "$tmp/SHA256SUMS.txt" "$BASE/SHA256SUMS.txt"
-want="$(awk -v f="$pkg" '$2 == f { print $1 }' "$tmp/SHA256SUMS.txt")"
-have="$(sha256sum "$tmp/$pkg" | awk '{ print $1 }')"
-[ -n "$want" ] && [ "$want" = "$have" ] || die "Download check failed: $pkg doesn't match SHA256SUMS.txt."
-say "✓ Package verified"
+say "Adding the Zeltro package repository…"
+curl -fsSL -o "$tmp/zeltro.asc" "$REPO/zeltro.asc"
+if command -v gpg >/dev/null 2>&1; then
+  got="$(gpg --show-keys --with-colons "$tmp/zeltro.asc" 2>/dev/null | awk -F: '/^fpr/ { print $10; exit }')"
+  [ "$got" = "$FPR" ] || die "The repository key is not the Zeltro key (got ${got:-nothing}). Stopping."
+fi
 
 case "$kind" in
-  deb)  sudo apt-get install -y "$tmp/$pkg" ;;
-  rpm)  sudo dnf install -y "$tmp/$pkg" ;;
-  arch) sudo pacman -U --noconfirm "$tmp/$pkg" ;;
+  deb)
+    sudo install -D -m 644 "$tmp/zeltro.asc" /etc/apt/keyrings/zeltro.asc
+    echo "deb [arch=amd64 signed-by=/etc/apt/keyrings/zeltro.asc] $REPO/apt stable main" \
+      | sudo tee /etc/apt/sources.list.d/zeltro.list >/dev/null
+    sudo apt-get update -o Dir::Etc::sourcelist=sources.list.d/zeltro.list \
+      -o Dir::Etc::sourceparts=- -o APT::Get::List-Cleanup=0 >/dev/null
+    say "Installing the Zeltro app…"
+    sudo apt-get install -y zeltro-gui ;;
+  rpm)
+    sudo install -D -m 644 "$tmp/zeltro.asc" /etc/pki/rpm-gpg/RPM-GPG-KEY-zeltro
+    printf '%s\n' '[zeltro]' 'name=Zeltro' "baseurl=$REPO/rpm" 'enabled=1' 'gpgcheck=1' \
+      'repo_gpgcheck=1' 'gpgkey=file:///etc/pki/rpm-gpg/RPM-GPG-KEY-zeltro' \
+      | sudo tee /etc/yum.repos.d/zeltro.repo >/dev/null
+    say "Installing the Zeltro app…"
+    sudo dnf install -y zeltro-gui ;;
+  arch)
+    sudo pacman-key --add "$tmp/zeltro.asc" >/dev/null
+    sudo pacman-key --lsign-key "$FPR" >/dev/null
+    if ! grep -q '^\[zeltro\]' /etc/pacman.conf; then
+      printf '\n[zeltro]\nSigLevel = Required DatabaseRequired\nServer = %s/arch/$arch\n' "$REPO" \
+        | sudo tee -a /etc/pacman.conf >/dev/null
+    fi
+    say "Installing the Zeltro app…"
+    # -Syu, not -Sy: Arch does not support partial upgrades.
+    sudo pacman -Syu --needed --noconfirm zeltro-gui ;;
 esac
 
 say "✓ Zeltro installed. Open it from your applications menu."
+echo "  Updates arrive with your system's own (apt upgrade, dnf upgrade, pacman -Syu)."
 echo "  If the CLI was installed just now, log out and back in first so Docker works."
 echo "  Free for personal use. Business use: https://zeltro.build/commercial"
