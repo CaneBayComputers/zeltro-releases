@@ -44,11 +44,39 @@ tmp="$(mktemp -d)"
 trap 'rm -rf "$tmp"' EXIT
 
 say "Adding the Zeltro package repository…"
-curl -fsSL -o "$tmp/zeltro.asc" "$REPO/zeltro.asc"
-if command -v gpg >/dev/null 2>&1; then
-  got="$(gpg --show-keys --with-colons "$tmp/zeltro.asc" 2>/dev/null | awk -F: '/^fpr/ { print $10; exit }')"
-  [ "$got" = "$FPR" ] || die "The repository key is not the Zeltro key (got ${got:-nothing}). Stopping."
-fi
+# The key is part of this script rather than downloaded, so trusting the
+# repository never depends on what a server hands back.
+cat > "$tmp/zeltro.asc" <<'KEY'
+-----BEGIN PGP PUBLIC KEY BLOCK-----
+
+mQINBGq7MdkBEADCzWp3nxiq1isFntODLbmAfW05mpILlqYw5awZ/lt2seRl2PIY
+Yl5zbQadQgGGgRECAgWYmwShwKHOGzaZGnsHnkTmNcoeZyoQFwu1f/dSaBTjmFlk
+SEpLcCJcdi7yImEMz0oEPsNdgzuMYeMLQOcTP6vHvhTiIjutQrEQXkf5pH+mZoHf
+PqYiG1F+5lhIdCpPPIPmynALIfXKQmt4RrhXoTMQ+aZEHACawVXgoXn5f50Juccj
+UqmqHpV369VIneVTcI3EJJBeyqVxj5+72wMYCrLlBhvit8v7xXNGTd0DEUHpOQKH
+KOqfWSIIXvELfa/6yNA4L3jG84/Gf+i9aJ4c78qH9dkl79yQIhiwAtpMTdo/H1ca
+0/mlZJyLmG1ZCjNHvrTg5r6DpxdtAmoJMtkr1advzNEdbPMqWYuomBdQVuSRw2NR
+/QeOPl4SwMZ6qdliMhv5zogF6oj4KzfkVVqJeU5pq44SAImSbvHX7WATZxKTqyMC
+/RboG05P8RF+yPeLRL4f1qv2Ypqufs3sU7mqS4uHMpB7oRa2WANVrQQzS1jGKhZW
+C358GkRSdUriY2MuKNfHMoLivG7jIKLj7Um/ofErvrw1/GI4m1gu5EaJxiCJFQ8Y
+YckUlsl2tPPiGtrHUvx3rGR5XFAeakMVkuH729HSkO9nVDEYbi2mepiDowARAQAB
+tCxaZWx0cm8gUGFja2FnZXMgPGNhbmViYXljb21wdXRlcnNAZ21haWwuY29tPokC
+UQQTAQoAOxYhBB3qMWS+nwZ52ZEzFQlwtB/6Xp97BQJquzHZAhsDBQsJCAcCAiIC
+BhUKCQgLAgQWAgMBAh4HAheAAAoJEAlwtB/6Xp97ZxAQAJ3dWsdyp8QBOZE6rkJ8
+BaLi4zIogYtokhxMAmnH4rxUBUXUte/0iH9CBdIKrvXgmj9YLVb9g9PYtPsWkP03
+ejgoPiw+2P2xQFSOxPmMHy6Yj9kevTwxY5VOxjSTxxFifiQoIdJN1D/zGDaVNzMi
+xIMA4E450e/lfuG1WaysWoQjpITiatfqs/B39rD5tq+edwCOWx0L/MEuVAgCs0fk
+WjlN3/Gn+DHOD8WKqmrDxDew0jZZkS/aV3lGZoTv77yvDmyu9/JtQRphwObYUxWq
+7JPIduxCPz/rk2xPUYlHJ2Yexxh+L5L8nBXolRl4/YB062kfHZcBFxMF1xih4zF4
+shaKipxK0DloUH/UfNvScsy6z76xyEY3hi1UGKhPzmEOVSY+Hu/ZRfxiIEZamuug
+pZdyzx7rdSmtkejjwM0ZgvpdoUAiU6CNpgHWaYFC58OFkJ0VfxQpgW/DGcuOSsqg
+ZA+wN9tIjE++p2+6BR392jeMV8ppp/QDPT4QvRgrXls9GDzflpLc5Webg4KmJfSu
+hUGBNvPo3PDn4VC655osBxcHgkzwY1WaoQg7M3smxBgdtK1HjFfcAVBCRS6HBTrG
+1EVX9Hc8LZ1Mt2czydpDqz+2LJGuHXESg+hge4ySDxZOXHap6k/TxsU/oSQsYCl+
+08SXh7yjOR15QBm0RN0UyNpE
+=gRIH
+-----END PGP PUBLIC KEY BLOCK-----
+KEY
 
 case "$kind" in
   deb)
@@ -74,8 +102,15 @@ case "$kind" in
         | sudo tee -a /etc/pacman.conf >/dev/null
     fi
     say "Installing the Zeltro app…"
-    # -Syu, not -Sy: Arch does not support partial upgrades.
-    sudo pacman -Syu --needed --noconfirm zeltro-gui ;;
+    # -Syu, not -Sy: Arch does not support partial upgrades. That makes this a
+    # full system upgrade, so pacman shows the list and asks. Its question is
+    # read from the terminal: under `curl | bash`, stdin is this script.
+    echo "  On Arch this also upgrades the rest of the system (Arch does not support partial upgrades)."
+    if [ -r /dev/tty ] && : </dev/tty 2>/dev/null; then
+      sudo pacman -Syu --needed zeltro-gui </dev/tty
+    else
+      sudo pacman -Syu --needed --noconfirm zeltro-gui
+    fi ;;
 esac
 
 say "✓ Zeltro installed. Open it from your applications menu."
